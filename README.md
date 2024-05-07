@@ -1,2 +1,2 @@
 # netcat
-malware script
+script criado para fins educacionais
