@@ -4,6 +4,8 @@ import getopt
 import threading
 import subprocess
 
+from past.builtins import raw_input
+
 # Define some global variables
 
 listen = False
@@ -13,6 +15,39 @@ execute = ""
 target = ""
 upload_destination = ""
 port = 0
+
+
+def client_sender(buffer):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        client.connect((target, port))
+
+        if len(buffer):
+            client.send(buffer)
+
+        while True:
+            recv_len = 1
+            response = ""
+
+            while recv_len:
+                data = client.recv(4096)
+                recv_len = len(data)
+                response += data
+
+                if recv_len < 4096:
+                    break
+
+            print(response)
+
+            buffer = raw_input("")
+            buffer += "\n"
+
+            client.send(buffer)
+    except:
+        print("[*] Exception! Exiting.")
+
+        client.close()
 
 def usage():
     print("BHP Net Tool")
@@ -63,3 +98,7 @@ def main():
             port = int(a)
         else:
             assert False, "Unhandled Option"
+
+    if not listen and len(target) and port > 0:
+        buffer = sys.stdin.read()
+        client_sender(buffer)
